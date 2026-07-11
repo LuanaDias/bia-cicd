@@ -1,26 +1,27 @@
-FROM node:20-slim
+FROM node:16-slim
 
 WORKDIR /usr/src/app
 
-# Backend
+# Instala dependências do backend
 COPY package*.json ./
 RUN npm install --loglevel=error
 
-# Frontend
+# Instala dependências do frontend
 COPY client/package*.json ./client/
 RUN cd client && npm install --loglevel=error
 
-# Código
+# Copia o restante do projeto
 COPY . .
 
-# Build React
+# Build do React
 RUN REACT_APP_API_URL=http://localhost:3001 \
     SKIP_PREFLIGHT_CHECK=true \
     npm run build --prefix client
 
-RUN mv client/build build
-RUN rm -rf client/*
-RUN mv build client/
+# Move o build para a estrutura esperada pela aplicação
+RUN mv client/build build && \
+    rm -rf client/* && \
+    mv build client/
 
 EXPOSE 8080
 
